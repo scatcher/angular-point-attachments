@@ -138,17 +138,17 @@ angular.module('angularPoint')
   'use strict';
 
   $templateCache.put('src/ap_attachments_tmpl.html',
-    "<style>.ap-attachments-container {\n" +
-    "        min-height: 200px;\n" +
-    "    }\n" +
+    "<div><style>.ap-attachments-container {\n" +
+    "            min-height: 200px;\n" +
+    "        }\n" +
     "\n" +
-    "    .ap-attachments-container .ap-add-attachments {\n" +
-    "        height: 110px;\n" +
-    "    }\n" +
+    "        .ap-attachments-container .ap-add-attachments {\n" +
+    "            height: 110px;\n" +
+    "        }\n" +
     "\n" +
-    "    .ap-attachments-container .ap-add-attachments iframe{\n" +
-    "        height: 95px;\n" +
-    "    }</style><div class=ap-attachments-container><fieldset ng-disabled=disabled><div class=\"row hidden-print\"><div class=col-xs-12><div ng-hide=state.ready class=\"alert alert-info\">Loading attachment details</div><div class=ap-add-attachments ng-show=state.ready><h4><small>Add Attachment</small></h4><iframe frameborder=0 seamless width=100% src=\"{{ trustedUrl }}\" scrolling=no></iframe></div></div></div><h4 ng-show=\"attachments.length > 0\"><small>Attachments</small></h4><ul class=list-unstyled><li ng-repeat=\"attachment in attachments\"><a href=\"{{ attachment }}\" target=_blank>{{ fileName(attachment) }}</a> <button class=\"btn btn-link\" ng-click=deleteAttachment(attachment) title=\"Delete this attachment\"><i class=\"fa fa-times red\"></i></button></li></ul></fieldset></div>"
+    "        .ap-attachments-container .ap-add-attachments iframe{\n" +
+    "            height: 95px;\n" +
+    "        }</style><div class=ap-attachments-container><fieldset ng-disabled=disabled><div class=\"row hidden-print\"><div class=col-xs-12><div ng-hide=state.ready class=\"alert alert-info\">Loading attachment details</div><div class=ap-add-attachments ng-show=state.ready><h4><small>Add Attachment</small></h4><iframe frameborder=0 seamless width=100% src=\"{{ trustedUrl }}\" scrolling=no></iframe></div></div></div><h4 ng-show=\"attachments.length > 0\"><small>Attachments</small></h4><ul class=list-unstyled><li ng-repeat=\"attachment in attachments\"><a href=\"{{ attachment }}\" target=_blank>{{ fileName(attachment) }}</a> <button class=\"btn btn-link\" ng-click=deleteAttachment(attachment) title=\"Delete this attachment\"><i class=\"fa fa-times red\"></i></button></li></ul></fieldset></div></div>"
   );
 
 }]);
