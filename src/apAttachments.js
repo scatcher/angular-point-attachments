@@ -37,66 +37,18 @@ angular.module('angularPoint')
             link: function (scope, element, attrs) {
 
                 scope.attachments = [];
-                scope.state = {
-                    ready: false
-                };
-
-                scope.refresh = function () {
-                    if (!scope.$$phase) {
-                        scope.$apply();
-                    }
-                };
-
-                function resetSrc() {
-                    if (_.isFunction(scope.changeEvent)) {
-                        scope.changeEvent();
-                    }
-                    //Reset iframe
-                    element.find('iframe').attr('src', element.find('iframe').attr('src'));
-                }
-
-                var listItemModel = scope.listItem.getModel();
-                var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
-                    listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
-
-                scope.trustedUrl = $sce.trustAsResourceUrl(uploadUrl);
-
-                //Pull down all attachments for the current list item
-                var fetchAttachments = function () {
-                    toastr.info("Checking for attachments");
-                    scope.listItem.getAttachmentCollection().then(function (attachments) {
-                        scope.attachments.length = 0;
-                        //Push any new attachments into the existing array to prevent breakage of references
-                        Array.prototype.push.apply(scope.attachments, attachments);
-                    });
-                };
+                scope.deleteAttachment = deleteAttachment;
+                scope.fileName = fileName;
+                scope.state = { ready: false };
+                scope.trustedUrl = constructUrl();
 
                 //Instantiate request
                 fetchAttachments();
 
-                scope.fileName = function (attachment) {
-                    var index = attachment.lastIndexOf("/") + 1;
-                    return attachment.substr(index);
-                };
-
-                scope.deleteAttachment = function (attachment) {
-                    var confirmation = window.confirm("Are you sure you want to delete this file?");
-                    if (confirmation) {
-                        toastr.info("Negotiating with the server");
-                        scope.listItem.deleteAttachment(attachment).then(function () {
-                            toastr.success("Attachment successfully deleted");
-                            fetchAttachments();
-                            if (_.isFunction(scope.changeEvent)) {
-                                scope.changeEvent();
-                            }
-                        });
-                    }
-                };
-
                 //Run when the iframe url changes and fully loaded
                 element.find('iframe').bind('load', function (event) {
                     scope.state.ready = true;
-                    scope.refresh();
+                    //scope.refresh();
                     var iframe = $(this).contents();
 
                     if (iframe.find("#CancelButton").length < 1) {
@@ -130,6 +82,55 @@ angular.module('angularPoint')
                         console.log("Frame Loaded");
                     }
                 });
+
+                function constructUrl() {
+                    var listItemModel = scope.listItem.getModel();
+                    var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
+                        listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
+                    return $sce.trustAsResourceUrl(uploadUrl);
+                }
+
+                function deleteAttachment (attachment) {
+                    var confirmation = window.confirm("Are you sure you want to delete this file?");
+                    if (confirmation) {
+                        toastr.info("Negotiating with the server");
+                        scope.listItem.deleteAttachment(attachment).then(function () {
+                            toastr.success("Attachment successfully deleted");
+                            fetchAttachments();
+                            if (_.isFunction(scope.changeEvent)) {
+                                scope.changeEvent();
+                            }
+                        });
+                    }
+                }
+
+                //Pull down all attachments for the current list item
+                function fetchAttachments () {
+                    toastr.info("Checking for attachments");
+                    scope.listItem.getAttachmentCollection()
+                        .then(function (attachments) {
+                            scope.attachments = attachments;
+                        });
+                }
+
+                function fileName (attachment) {
+                    var index = attachment.lastIndexOf("/") + 1;
+                    return attachment.substr(index);
+                }
+
+                function refresh() {
+                    if (!scope.$$phase) {
+                        scope.$apply();
+                    }
+                }
+
+                function resetSrc() {
+                    if (_.isFunction(scope.changeEvent)) {
+                        scope.changeEvent();
+                    }
+                    //Reset iframe
+                    element.find('iframe').attr('src', element.find('iframe').attr('src'));
+                }
 
             }
         };
