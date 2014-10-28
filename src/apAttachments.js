@@ -36,14 +36,15 @@ angular.module('angularPoint')
             },
             link: function (scope, element, attrs) {
 
-                scope.attachments = [];
+                if(!scope.listItem || !scope.listItem.id) {
+                    throw 'A valid list item is required.'
+                }
+
+                scope.listItem.attachments = scope.listItem.attachments || [];
                 scope.deleteAttachment = deleteAttachment;
                 scope.fileName = fileName;
                 scope.state = { ready: false };
                 scope.trustedUrl = constructUrl();
-
-                //Instantiate request
-                fetchAttachments();
 
                 //Run when the iframe url changes and fully loaded
                 element.find('iframe').bind('load', function (event) {
@@ -55,7 +56,7 @@ angular.module('angularPoint')
                         //Upload complete, reset iframe
                         toastr.success("File successfully uploaded");
                         resetSrc();
-                        fetchAttachments();
+                        syncronizeRemoteChanges();
                         if (_.isFunction(scope.changeEvent)) {
                             scope.changeEvent();
                         }
@@ -80,6 +81,7 @@ angular.module('angularPoint')
                         });
 
                         console.log("Frame Loaded");
+                        refresh();
                     }
                 });
 
@@ -96,7 +98,7 @@ angular.module('angularPoint')
                         toastr.info("Negotiating with the server");
                         scope.listItem.deleteAttachment(attachment).then(function () {
                             toastr.success("Attachment successfully deleted");
-                            fetchAttachments();
+                            syncronizeRemoteChanges();
                             if (_.isFunction(scope.changeEvent)) {
                                 scope.changeEvent();
                             }
@@ -104,13 +106,19 @@ angular.module('angularPoint')
                     }
                 }
 
-                //Pull down all attachments for the current list item
-                function fetchAttachments () {
-                    toastr.info("Checking for attachments");
-                    scope.listItem.getAttachmentCollection()
-                        .then(function (attachments) {
-                            scope.attachments = attachments;
-                        });
+                /**
+                 *  Events from the iframe don't automatically sync with the cache so we need to get
+                 *  the updated list item which will extend the changes to our local referenced list
+                 *  item.
+                 */
+                function syncronizeRemoteChanges () {
+                    var model = scope.listItem.getModel();
+                    model.getListItemById(scope.listItem.id);
+                    //toastr.info("Checking for attachments");
+                    //scope.listItem.getAttachmentCollection()
+                    //    .then(function (attachments) {
+                    //        scope.attachments = attachments;
+                    //    });
                 }
 
                 function fileName (attachment) {
@@ -131,7 +139,6 @@ angular.module('angularPoint')
                     //Reset iframe
                     element.find('iframe').attr('src', element.find('iframe').attr('src'));
                 }
-
             }
         };
     });

@@ -36,14 +36,15 @@ angular.module('angularPoint')
             },
             link: function (scope, element, attrs) {
 
-                scope.attachments = [];
+                if(!scope.listItem || !scope.listItem.id) {
+                    throw 'A valid list item is required.'
+                }
+
+                scope.listItem.attachments = scope.listItem.attachments || [];
                 scope.deleteAttachment = deleteAttachment;
                 scope.fileName = fileName;
                 scope.state = { ready: false };
                 scope.trustedUrl = constructUrl();
-
-                //Instantiate request
-                fetchAttachments();
 
                 //Run when the iframe url changes and fully loaded
                 element.find('iframe').bind('load', function (event) {
@@ -55,7 +56,7 @@ angular.module('angularPoint')
                         //Upload complete, reset iframe
                         toastr.success("File successfully uploaded");
                         resetSrc();
-                        fetchAttachments();
+                        syncronizeRemoteChanges();
                         if (_.isFunction(scope.changeEvent)) {
                             scope.changeEvent();
                         }
@@ -80,6 +81,7 @@ angular.module('angularPoint')
                         });
 
                         console.log("Frame Loaded");
+                        refresh();
                     }
                 });
 
@@ -96,7 +98,7 @@ angular.module('angularPoint')
                         toastr.info("Negotiating with the server");
                         scope.listItem.deleteAttachment(attachment).then(function () {
                             toastr.success("Attachment successfully deleted");
-                            fetchAttachments();
+                            syncronizeRemoteChanges();
                             if (_.isFunction(scope.changeEvent)) {
                                 scope.changeEvent();
                             }
@@ -104,13 +106,19 @@ angular.module('angularPoint')
                     }
                 }
 
-                //Pull down all attachments for the current list item
-                function fetchAttachments () {
-                    toastr.info("Checking for attachments");
-                    scope.listItem.getAttachmentCollection()
-                        .then(function (attachments) {
-                            scope.attachments = attachments;
-                        });
+                /**
+                 *  Events from the iframe don't automatically sync with the cache so we need to get
+                 *  the updated list item which will extend the changes to our local referenced list
+                 *  item.
+                 */
+                function syncronizeRemoteChanges () {
+                    var model = scope.listItem.getModel();
+                    model.getListItemById(scope.listItem.id);
+                    //toastr.info("Checking for attachments");
+                    //scope.listItem.getAttachmentCollection()
+                    //    .then(function (attachments) {
+                    //        scope.attachments = attachments;
+                    //    });
                 }
 
                 function fileName (attachment) {
@@ -131,7 +139,6 @@ angular.module('angularPoint')
                     //Reset iframe
                     element.find('iframe').attr('src', element.find('iframe').attr('src'));
                 }
-
             }
         };
     }]);
@@ -149,7 +156,7 @@ angular.module('angularPoint')
     "\n" +
     "        .ap-attachments-container .ap-add-attachments iframe{\n" +
     "            height: 95px;\n" +
-    "        }</style><div class=ap-attachments-container><fieldset ng-disabled=disabled><div class=\"row hidden-print\"><div class=col-xs-12><div ng-hide=state.ready class=\"alert alert-info\">Loading attachment details</div><div class=ap-add-attachments ng-show=state.ready><h4><small>Add Attachment</small></h4><iframe frameborder=0 seamless width=100% ng-src=\"{{ trustedUrl }}\" scrolling=no></iframe></div></div></div><h4 ng-show=\"attachments.length > 0\"><small>Attachments</small></h4><ul class=list-unstyled><li ng-repeat=\"attachment in attachments\"><a href=\"{{ attachment }}\" target=_blank>{{ fileName(attachment) }}</a> <button class=\"btn btn-link\" ng-click=deleteAttachment(attachment) title=\"Delete this attachment\"><i class=\"fa fa-times red\"></i></button></li></ul></fieldset></div></div>"
+    "        }</style><div class=ap-attachments-container><fieldset ng-disabled=disabled><div class=\"row hidden-print\"><div class=col-xs-12><div ng-hide=state.ready class=\"alert alert-info\">Loading attachment details</div><div class=ap-add-attachments ng-show=state.ready><h4><small>Add Attachment</small></h4><iframe frameborder=0 seamless width=100% ng-src=\"{{ trustedUrl }}\" scrolling=no></iframe></div></div></div><div ng-if=\"attachments.length > 0\"><hr class=hr-sm><h4><small>Attachments</small></h4><ul class=list-unstyled><li ng-repeat=\"attachment in listItem.attachments\"><a href=\"{{ attachment }}\" target=_blank>{{ fileName(attachment) }}</a> <button class=\"btn btn-link\" ng-click=deleteAttachment(attachment) title=\"Delete this attachment\"><i class=\"fa fa-times red\"></i></button></li></ul></div></fieldset></div></div>"
   );
 
 }]);

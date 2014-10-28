@@ -29,19 +29,23 @@
                     </div>
                 </div>
             </div>
+            <div ng-if="attachments.length > 0">
+                <hr class="hr-sm">
+                <h4>
+                    <small>Attachments</small>
+                </h4>
 
-            <h4 ng-show="attachments.length > 0">
-                <small>Attachments</small>
-            </h4>
+                <ul class="list-unstyled">
+                    <li ng-repeat="attachment in listItem.attachments">
+                        <a href="{{ attachment }}" target="_blank">{{ fileName(attachment) }}</a>
+                        <button class="btn btn-link" ng-click="deleteAttachment(attachment)" title="Delete this attachment">
+                            <i class="fa fa-times red"></i>
+                        </button>
+                    </li>
+                </ul>
 
-            <ul class="list-unstyled">
-                <li ng-repeat="attachment in attachments">
-                    <a href="{{ attachment }}" target="_blank">{{ fileName(attachment) }}</a>
-                    <button class="btn btn-link" ng-click="deleteAttachment(attachment)" title="Delete this attachment">
-                        <i class="fa fa-times red"></i>
-                    </button>
-                </li>
-            </ul>
+            </div>
+
 
         </fieldset>
 
