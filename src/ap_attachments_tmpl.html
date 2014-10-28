@@ -16,7 +16,7 @@
     <div class="ap-attachments-container">
         <fieldset ng-disabled="disabled">
 
-            <div class="row hidden-print">
+            <div class="row hidden-print" ng-if="!state.disabled">
                 <div class="col-xs-12">
                     <div ng-hide="state.ready" class="alert alert-info">Loading attachment details</div>
                     <div class="ap-add-attachments"
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div ng-if="attachments.length > 0">
+            <div ng-if="listItem.attachments.length > 0">
                 <hr class="hr-sm">
                 <h4>
                     <small>Attachments</small>

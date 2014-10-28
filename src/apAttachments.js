@@ -24,7 +24,7 @@
  * </pre>
  */
 angular.module('angularPoint')
-    .directive('apAttachments', function ($sce, toastr, _) {
+    .directive('apAttachments', function ($sce, $timeout, toastr, _) {
         return {
             restrict: "A",
             replace: true,
@@ -43,47 +43,51 @@ angular.module('angularPoint')
                 scope.listItem.attachments = scope.listItem.attachments || [];
                 scope.deleteAttachment = deleteAttachment;
                 scope.fileName = fileName;
-                scope.state = { ready: false };
+                scope.state = {
+                    ready: false
+                };
                 scope.trustedUrl = constructUrl();
 
-                //Run when the iframe url changes and fully loaded
-                element.find('iframe').bind('load', function (event) {
-                    scope.state.ready = true;
-                    //scope.refresh();
-                    var iframe = $(this).contents();
+                $timeout(function () {
+                    //Run when the iframe url changes and fully loaded
+                    element.find('iframe').bind('load', function (event) {
+                        scope.state.ready = true;
+                        var iframe = $(this).contents();
 
-                    if (iframe.find("#CancelButton").length < 1) {
-                        //Upload complete, reset iframe
-                        toastr.success("File successfully uploaded");
-                        resetSrc();
-                        syncronizeRemoteChanges();
-                        if (_.isFunction(scope.changeEvent)) {
-                            scope.changeEvent();
+                        if (iframe.find("#CancelButton").length < 1) {
+                            //Upload complete, reset iframe
+                            toastr.success("File successfully uploaded");
+                            resetSrc();
+                            syncronizeRemoteChanges();
+                            if (_.isFunction(scope.changeEvent)) {
+                                scope.changeEvent();
+                            }
+
+                        } else {
+                            //Hide the standard cancel button
+                            iframe.find("#CancelButton").hide();
+                            iframe.find(".ms-dialog").css({height: '95px'});
+
+                            //Style OK button
+                            iframe.find("input[name$='Ok']").css({float: 'left'}).click(function (event) {
+                                //Click handler
+                                toastr.info("Please wait while the file is uploaded");
+                            });
+
+                            iframe.find("input[name$='$InputFile']").attr({'size': 40});
+
+                            //Style iframe to prevent scroll bars from appearing
+                            iframe.find("#s4-workspace").css({
+                                'overflow-y': 'hidden',
+                                'overflow-x': 'hidden'
+                            });
+
+                            console.log("Frame Loaded");
+                            refresh();
                         }
-
-                    } else {
-                        //Hide the standard cancel button
-                        iframe.find("#CancelButton").hide();
-                        iframe.find(".ms-dialog").css({height: '95px'});
-
-                        //Style OK button
-                        iframe.find("input[name$='Ok']").css({float: 'left'}).click(function (event) {
-                            //Click handler
-                            toastr.info("Please wait while the file is uploaded");
-                        });
-
-                        iframe.find("input[name$='$InputFile']").attr({'size': 40});
-
-                        //Style iframe to prevent scroll bars from appearing
-                        iframe.find("#s4-workspace").css({
-                            'overflow-y': 'hidden',
-                            'overflow-x': 'hidden'
-                        });
-
-                        console.log("Frame Loaded");
-                        refresh();
-                    }
+                    });
                 });
+
 
                 function constructUrl() {
                     var listItemModel = scope.listItem.getModel();
@@ -114,11 +118,6 @@ angular.module('angularPoint')
                 function syncronizeRemoteChanges () {
                     var model = scope.listItem.getModel();
                     model.getListItemById(scope.listItem.id);
-                    //toastr.info("Checking for attachments");
-                    //scope.listItem.getAttachmentCollection()
-                    //    .then(function (attachments) {
-                    //        scope.attachments = attachments;
-                    //    });
                 }
 
                 function fileName (attachment) {
