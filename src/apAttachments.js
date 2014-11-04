@@ -24,7 +24,7 @@
  * </pre>
  */
 angular.module('angularPoint')
-    .directive('apAttachments', function ($sce, $timeout, toastr, _) {
+    .directive('apAttachments', function ($sce, $q, $timeout, apDataService, toastr, _) {
         return {
             restrict: "A",
             replace: true,
@@ -37,33 +37,94 @@ angular.module('angularPoint')
             link: function (scope, element, attrs) {
 
                 if(!scope.listItem || !scope.listItem.id) {
-                    throw 'A valid list item is required.'
+                    return;
                 }
 
                 scope.listItem.attachments = scope.listItem.attachments || [];
                 scope.deleteAttachment = deleteAttachment;
                 scope.fileName = fileName;
                 scope.state = {
-                    ready: false
+                    legacyBrowser: false,
+                    uploading: false
                 };
-                scope.trustedUrl = constructUrl();
+                scope.uploadAttachment = uploadAttachment;
 
-                $timeout(function () {
-                    //Run when the iframe url changes and fully loaded
-                    element.find('iframe').bind('load', function (event) {
-                        scope.state.ready = true;
-                        var iframe = $(this).contents();
+                activate();
 
-                        if (iframe.find("#CancelButton").length < 1) {
-                            //Upload complete, reset iframe
-                            toastr.success("File successfully uploaded");
-                            resetSrc();
+                function activate() {
+                    if(typeof FileReader !== 'undefined') {
+                        scope.state.legacyBrowser = false;
+                    } else {
+                        /** Outdated browser so use iframe */
+                        scope.state.legacyBrowser = true;
+                        iframeFallback();
+                        scope.trustedUrl = constructUrl();
+                    }
+                }
+
+                function constructUrl() {
+                    var listItemModel = scope.listItem.getModel();
+                    var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
+                        listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
+                    return $sce.trustAsResourceUrl(uploadUrl);
+                }
+
+                function deleteAttachment (attachment) {
+                    var confirmation = window.confirm("Are you sure you want to delete this file?");
+                    if (confirmation) {
+                        toastr.info("Negotiating with the server");
+                        scope.listItem.deleteAttachment(attachment).then(function () {
                             syncronizeRemoteChanges();
+                            toastr.success("Attachment successfully deleted");
                             if (_.isFunction(scope.changeEvent)) {
                                 scope.changeEvent();
                             }
+                        });
+                    }
+                }
 
+                function fileName (attachment) {
+                    var index = attachment.lastIndexOf("/") + 1;
+                    return attachment.substr(index);
+                }
+
+                function getFileBuffer(file) {
+                    var deferred = $q.defer();
+
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        deferred.resolve(e.target.result);
+                    };
+
+                    reader.onerror = function(e) {
+                        deferred.reject(e.target.error);
+                    };
+
+                    reader.readAsArrayBuffer(file);
+
+                    return deferred.promise;
+                }
+
+                function iframeFallback() {
+                    //Run when the iframe url changes and fully loaded
+                    refresh();
+                    element.find('iframe').bind('load', function (event) {
+                        var iframe = $(this).contents();
+                        refresh();
+
+                        if (iframe.find("#CancelButton").length < 1) {
+
+                            //Upload complete, reset iframe
+                            toastr.success("File successfully uploaded");
+                            syncronizeRemoteChanges();
+                            resetSrc();
+                            if (_.isFunction(scope.changeEvent)) {
+                                scope.changeEvent();
+                            }
                         } else {
+                            removeDialogOverlay();
+
                             //Hide the standard cancel button
                             iframe.find("#CancelButton").hide();
                             iframe.find(".ms-dialog").css({height: '95px'});
@@ -82,33 +143,28 @@ angular.module('angularPoint')
                                 'overflow-x': 'hidden'
                             });
 
-                            console.log("Frame Loaded");
-                            refresh();
+
                         }
                     });
-                });
-
-
-                function constructUrl() {
-                    var listItemModel = scope.listItem.getModel();
-                    var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
-                        listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
-                    return $sce.trustAsResourceUrl(uploadUrl);
                 }
 
-                function deleteAttachment (attachment) {
-                    var confirmation = window.confirm("Are you sure you want to delete this file?");
-                    if (confirmation) {
-                        toastr.info("Negotiating with the server");
-                        scope.listItem.deleteAttachment(attachment).then(function () {
-                            toastr.success("Attachment successfully deleted");
-                            syncronizeRemoteChanges();
-                            if (_.isFunction(scope.changeEvent)) {
-                                scope.changeEvent();
-                            }
-                        });
-                    }
+                /** Ensure no popup dialogs get overlayed on the iframe */
+                function removeDialogOverlay() {
+                    var maxAttempts = 10;
+                    $timeout(function () {
+                        try{
+                            var iframe = element.find('iframe')[0];
+                            iframe.contentWindow.SP.UI.ModalDialog.commonModalDialogClose(function() {
+                                maxAttempts = 0;
+                            });
+                        } catch(err) {};
+                        maxAttempts--;
+                        if(maxAttempts > 0) {
+                            removeDialogOverlay();
+                        }
+                    }, 1000);
                 }
+
 
                 /**
                  *  Events from the iframe don't automatically sync with the cache so we need to get
@@ -117,13 +173,44 @@ angular.module('angularPoint')
                  */
                 function syncronizeRemoteChanges () {
                     var model = scope.listItem.getModel();
-                    model.getListItemById(scope.listItem.id);
+                    model.getListItemById(scope.listItem.id)
+                        .then(function (updatedItem) {
+                            if(scope.listItem.attachments !== updatedItem.attachments) {
+                                scope.listItem.attachments = updatedItem.attachments;
+                            }
+                        })
                 }
 
-                function fileName (attachment) {
-                    var index = attachment.lastIndexOf("/") + 1;
-                    return attachment.substr(index);
+                function uploadAttachment(){
+                    var file = document.getElementById('ap-file').files[0];
+
+                    getFileBuffer(file).then(function(buffer) {
+                        var binary = "";
+                        var bytes = new Uint8Array(buffer);
+                        var i = bytes.byteLength;
+                        while (i--) {
+                            binary = String.fromCharCode(bytes[i]) + binary;
+                        }
+
+                        scope.state.uploading = true;
+
+                        apDataService.serviceWrapper({
+                            operation: 'AddAttachment',
+                            listName: scope.listItem.getModel().list.getListId(),
+                            listItemID: scope.listItem.id,
+                            fileName: file.name,
+                            attachment: btoa(binary)
+                        }).then(function () {
+                            scope.state.uploading = false;
+                            toastr.success('File successfully uploaded');
+                            syncronizeRemoteChanges();
+                        }, function (err) {
+                            scope.state.uploading = false;
+                            toastr.error('There was a problem completing the upload.');
+                        });
+                    });
                 }
+
 
                 function refresh() {
                     if (!scope.$$phase) {
@@ -135,8 +222,8 @@ angular.module('angularPoint')
                     if (_.isFunction(scope.changeEvent)) {
                         scope.changeEvent();
                     }
-                    //Reset iframe
-                    element.find('iframe').attr('src', element.find('iframe').attr('src'));
+                    refresh();
+                    element.find('iframe').attr('src', constructUrl());
                 }
             }
         };

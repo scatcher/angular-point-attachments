@@ -8,27 +8,45 @@
             height: 110px;
         }
 
-        .ap-attachments-container .ap-add-attachments iframe{
+        .ap-attachments-container .ap-add-attachments iframe {
             height: 95px;
         }
     </style>
 
+
     <div class="ap-attachments-container">
         <fieldset ng-disabled="disabled">
 
-            <div class="row hidden-print" ng-if="!state.disabled">
-                <div class="col-xs-12">
-                    <div ng-hide="state.ready" class="alert alert-info">Loading attachment details</div>
-                    <div class="ap-add-attachments"
-                         ng-show="state.ready">
-                        <h4>
-                            <small>Add Attachment</small>
-                        </h4>
-                        <iframe frameborder="0" seamless="seamless" width="100%" ng-src="{{ trustedUrl }}"
-                                scrolling="no"></iframe>
+            <!---==============MODERN BROWSER=============-->
+            <div ng-if="!state.legacyBrowser">
+                <div ng-if="!state.uploading">
+                    <div class="input-group">
+                        <input type="file" id="ap-file" name="file" class="form-control">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button"
+                                    ng-click="uploadAttachment()">Add</button>
+                        </span>
                     </div>
+                    <p class="help-block">Select the files you want to upload and then click the Add button.</p>
+                </div>
+                <div ng-show="state.uploading" class="alert alert-info txt-align-center">
+                    <i class="fa fa-spinner fa-spin"></i> processing request...
                 </div>
             </div>
+
+            <!---==============LEGACY BROWSER=============-->
+            <div class="hidden-print" ng-if="state.legacyBrowser">
+                <div class="ap-add-attachments">
+                    <h4>
+                        <small>Add Attachment</small>
+                    </h4>
+                    <iframe frameborder="0" seamless="seamless" width="100%"
+                            src="{{ trustedUrl }}" id="ap-attachments-iframe"
+                            scrolling="no"></iframe>
+                </div>
+            </div>
+
+            <!---==============LIST OF ATTACHMENTS=============-->
             <div ng-if="listItem.attachments.length > 0">
                 <hr class="hr-sm">
                 <h4>
@@ -38,7 +56,8 @@
                 <ul class="list-unstyled">
                     <li ng-repeat="attachment in listItem.attachments">
                         <a href="{{ attachment }}" target="_blank">{{ fileName(attachment) }}</a>
-                        <button class="btn btn-link" ng-click="deleteAttachment(attachment)" title="Delete this attachment">
+                        <button class="btn btn-link" ng-click="deleteAttachment(attachment)"
+                                title="Delete this attachment">
                             <i class="fa fa-times red"></i>
                         </button>
                     </li>
