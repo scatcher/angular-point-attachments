@@ -261,7 +261,6 @@ module.exports = function (grunt) {
         'clean:docs',
         'ngdocs'
     ]);
-
     grunt.registerTask('build-docs', [
         'doc',
         'gh-pages'

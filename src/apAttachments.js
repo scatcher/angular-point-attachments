@@ -184,31 +184,34 @@ angular.module('angularPoint')
                 function uploadAttachment(){
                     var file = document.getElementById('ap-file').files[0];
 
-                    getFileBuffer(file).then(function(buffer) {
-                        var binary = "";
-                        var bytes = new Uint8Array(buffer);
-                        var i = bytes.byteLength;
-                        while (i--) {
-                            binary = String.fromCharCode(bytes[i]) + binary;
-                        }
+                    /** Ensure file name contains no illegal characters */
+                    if(file && validateFileName(file.name)) {
+                        getFileBuffer(file).then(function(buffer) {
+                            var binary = "";
+                            var bytes = new Uint8Array(buffer);
+                            var i = bytes.byteLength;
+                            while (i--) {
+                                binary = String.fromCharCode(bytes[i]) + binary;
+                            }
 
-                        scope.state.uploading = true;
+                            scope.state.uploading = true;
 
-                        apDataService.serviceWrapper({
-                            operation: 'AddAttachment',
-                            listName: scope.listItem.getModel().list.getListId(),
-                            listItemID: scope.listItem.id,
-                            fileName: file.name,
-                            attachment: btoa(binary)
-                        }).then(function () {
-                            scope.state.uploading = false;
-                            toastr.success('File successfully uploaded');
-                            syncronizeRemoteChanges();
-                        }, function (err) {
-                            scope.state.uploading = false;
-                            toastr.error('There was a problem completing the upload.');
+                            apDataService.serviceWrapper({
+                                operation: 'AddAttachment',
+                                listName: scope.listItem.getModel().list.getListId(),
+                                listItemID: scope.listItem.id,
+                                fileName: file.name,
+                                attachment: btoa(binary)
+                            }).then(function () {
+                                scope.state.uploading = false;
+                                toastr.success('File successfully uploaded');
+                                syncronizeRemoteChanges();
+                            }, function (err) {
+                                scope.state.uploading = false;
+                                toastr.error('There was a problem completing the upload.');
+                            });
                         });
-                    });
+                    }
                 }
 
 
@@ -224,6 +227,45 @@ angular.module('angularPoint')
                     }
                     refresh();
                     element.find('iframe').attr('src', constructUrl());
+                }
+
+                /**
+                 * @description Check to ensure file to be uploaded doesn't contain any illegal SharePoint characters.
+                 * @param {string} fileName The name of the file to be uploaded.
+                 * @returns {boolean} Is the file name valid?
+                 */
+                 function validateFileName(fileName) {
+                    var isValid = true;
+                    var userMessage = '';
+                    var illegalCharacters = ['~', '#', '%', '&', '*', '{', '}' , '\\', '/', ':', '<', '>', '?', '-', '|', '..'];
+                    _.each(illegalCharacters, function (illegalCharacter) {
+                        if(fileName.indexOf(illegalCharacter) > -1) {
+                            userMessage = 'The "' + illegalCharacter + '" character isn\'t allowed to be used in a file name.';
+                            /** Break loop early */
+                            return isValid = false;
+                        }
+                    });
+
+                    /** You cannot use the period character at the end of a file name. */
+                    if(fileName[fileName.length - 1] === '.') {
+                        userMessage = 'You cannot use the period character at the end of a file name.';
+                        isValid = false;
+                    }
+
+
+                    /** You cannot start a file name with the period. */
+                    if(fileName[0] === '.') {
+                        userMessage = 'You cannot start a file name with the period.';
+                        isValid = false;
+                    }
+
+                    /** Don't continue evaluating if a problem has already been found */
+                    if(!isValid) {
+                        userMessage += '  Please update the file on your system and upload again.';
+                        toastr.error(userMessage);
+                    }
+
+                    return isValid;
                 }
             }
         };

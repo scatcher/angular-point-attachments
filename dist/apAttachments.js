@@ -184,31 +184,34 @@ angular.module('angularPoint')
                 function uploadAttachment(){
                     var file = document.getElementById('ap-file').files[0];
 
-                    getFileBuffer(file).then(function(buffer) {
-                        var binary = "";
-                        var bytes = new Uint8Array(buffer);
-                        var i = bytes.byteLength;
-                        while (i--) {
-                            binary = String.fromCharCode(bytes[i]) + binary;
-                        }
+                    /** Ensure file name contains no illegal characters */
+                    if(file && validateFileName(file.name)) {
+                        getFileBuffer(file).then(function(buffer) {
+                            var binary = "";
+                            var bytes = new Uint8Array(buffer);
+                            var i = bytes.byteLength;
+                            while (i--) {
+                                binary = String.fromCharCode(bytes[i]) + binary;
+                            }
 
-                        scope.state.uploading = true;
+                            scope.state.uploading = true;
 
-                        apDataService.serviceWrapper({
-                            operation: 'AddAttachment',
-                            listName: scope.listItem.getModel().list.getListId(),
-                            listItemID: scope.listItem.id,
-                            fileName: file.name,
-                            attachment: btoa(binary)
-                        }).then(function () {
-                            scope.state.uploading = false;
-                            toastr.success('File successfully uploaded');
-                            syncronizeRemoteChanges();
-                        }, function (err) {
-                            scope.state.uploading = false;
-                            toastr.error('There was a problem completing the upload.');
+                            apDataService.serviceWrapper({
+                                operation: 'AddAttachment',
+                                listName: scope.listItem.getModel().list.getListId(),
+                                listItemID: scope.listItem.id,
+                                fileName: file.name,
+                                attachment: btoa(binary)
+                            }).then(function () {
+                                scope.state.uploading = false;
+                                toastr.success('File successfully uploaded');
+                                syncronizeRemoteChanges();
+                            }, function (err) {
+                                scope.state.uploading = false;
+                                toastr.error('There was a problem completing the upload.');
+                            });
                         });
-                    });
+                    }
                 }
 
 
@@ -225,6 +228,45 @@ angular.module('angularPoint')
                     refresh();
                     element.find('iframe').attr('src', constructUrl());
                 }
+
+                /**
+                 * @description Check to ensure file to be uploaded doesn't contain any illegal SharePoint characters.
+                 * @param {string} fileName The name of the file to be uploaded.
+                 * @returns {boolean} Is the file name valid?
+                 */
+                 function validateFileName(fileName) {
+                    var isValid = true;
+                    var userMessage = '';
+                    var illegalCharacters = ['~', '#', '%', '&', '*', '{', '}' , '\\', '/', ':', '<', '>', '?', '-', '|', '..'];
+                    _.each(illegalCharacters, function (illegalCharacter) {
+                        if(fileName.indexOf(illegalCharacter) > -1) {
+                            userMessage = 'The "' + illegalCharacter + '" character isn\'t allowed to be used in a file name.';
+                            /** Break loop early */
+                            return isValid = false;
+                        }
+                    });
+
+                    /** You cannot use the period character at the end of a file name. */
+                    if(fileName[fileName.length - 1] === '.') {
+                        userMessage = 'You cannot use the period character at the end of a file name.';
+                        isValid = false;
+                    }
+
+
+                    /** You cannot start a file name with the period. */
+                    if(fileName[0] === '.') {
+                        userMessage = 'You cannot start a file name with the period.';
+                        isValid = false;
+                    }
+
+                    /** Don't continue evaluating if a problem has already been found */
+                    if(!isValid) {
+                        userMessage += '  Please update the file on your system and upload again.';
+                        toastr.error(userMessage);
+                    }
+
+                    return isValid;
+                }
             }
         };
     }]);
@@ -232,16 +274,26 @@ angular.module('angularPoint')
   'use strict';
 
   $templateCache.put('src/ap_attachments_tmpl.html',
-    "<div><style>.ap-attachments-container {\n" +
-    "            min-height: 200px;\n" +
-    "        }\n" +
+    "<div><style>.ap-attachments-container {\r" +
     "\n" +
-    "        .ap-attachments-container .ap-add-attachments {\n" +
-    "            height: 110px;\n" +
-    "        }\n" +
+    "            min-height: 200px;\r" +
     "\n" +
-    "        .ap-attachments-container .ap-add-attachments iframe {\n" +
-    "            height: 95px;\n" +
+    "        }\r" +
+    "\n" +
+    "\r" +
+    "\n" +
+    "        .ap-attachments-container .ap-add-attachments {\r" +
+    "\n" +
+    "            height: 110px;\r" +
+    "\n" +
+    "        }\r" +
+    "\n" +
+    "\r" +
+    "\n" +
+    "        .ap-attachments-container .ap-add-attachments iframe {\r" +
+    "\n" +
+    "            height: 95px;\r" +
+    "\n" +
     "        }</style><div class=ap-attachments-container><fieldset ng-disabled=disabled><div ng-if=!state.legacyBrowser><div ng-if=!state.uploading><div class=input-group><input type=file id=ap-file name=file class=form-control> <span class=input-group-btn><button class=\"btn btn-primary\" type=button ng-click=uploadAttachment()>Add</button></span></div><p class=help-block>Select the files you want to upload and then click the Add button.</p></div><div ng-show=state.uploading class=\"alert alert-info txt-align-center\"><i class=\"fa fa-spinner fa-spin\"></i> processing request...</div></div><div class=hidden-print ng-if=state.legacyBrowser><div class=ap-add-attachments><h4><small>Add Attachment</small></h4><iframe frameborder=0 seamless width=100% src=\"{{ trustedUrl }}\" id=ap-attachments-iframe scrolling=no></iframe></div></div><div ng-if=\"listItem.attachments.length > 0\"><hr class=hr-sm><h4><small>Attachments</small></h4><ul class=list-unstyled><li ng-repeat=\"attachment in listItem.attachments\"><a href=\"{{ attachment }}\" target=_blank>{{ fileName(attachment) }}</a> <button class=\"btn btn-link\" ng-click=deleteAttachment(attachment) title=\"Delete this attachment\"><i class=\"fa fa-times red\"></i></button></li></ul></div></fieldset></div></div>"
   );
 
