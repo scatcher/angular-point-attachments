@@ -237,7 +237,7 @@ angular.module('angularPoint')
                  function validateFileName(fileName) {
                     var isValid = true;
                     var userMessage = '';
-                    var illegalCharacters = ['~', '#', '%', '&', '*', '{', '}' , '\\', '/', ':', '<', '>', '?', '-', '|', '..'];
+                    var illegalCharacters = ['~', '#', '%', '&', '*', '{', '}' , '\\', '/', ':', '<', '>', '?', '|', '"', '..'];
                     _.each(illegalCharacters, function (illegalCharacter) {
                         if(fileName.indexOf(illegalCharacter) > -1) {
                             userMessage = 'The "' + illegalCharacter + '" character isn\'t allowed to be used in a file name.';
