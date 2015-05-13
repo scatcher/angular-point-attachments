@@ -1,25 +1,14 @@
 {
   "name": "angular-point-attachments",
-  "version": "0.1.8",
+  "version": "1.0.0",
   "homepage": "https://github.com/scatcher/angular-point-attachments",
   "authors": [
     "Scott Hatcher <scott@hatcher.solutions>"
   ],
   "description": "Simple attachments directive for angular-point.",
-  "main": "dist/apAttachments.min.js",
-  "dependencies": {
-    "angular": "~1.2",
-    "angular-point": "^1.0.0",
-    "bootstrap": "^3.2.0",
-    "font-awesome": "~4.2.0",
-    "jquery": "~1.11",
-    "lodash": "^2.4"
-  },
-  "devDependencies": {
-    "angular-sanitize": "~1.2",
-    "angular-mocks": "~1.2",
-    "angular-point-attachments": "latest"
-  },
+  "main": "apAttachments.js",
+  "dependencies": {},
+  "devDependencies": {},
   "keywords": [
     "angular-point"
   ],
