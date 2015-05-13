@@ -1,13 +1,13 @@
 {
     "name": "angular-point-attachments",
-    "version": "0.1.8",
+    "version": "1.0.0",
     "description": "Simple attachments directive for angular-point.",
-    "main": "dist/apAttachments.min.js",
+    "main": "apAttachments.js",
     "directories": {
         "test": "test"
     },
     "scripts": {
-        "test": "grunt test"
+        "test": "gulp test"
     },
     "devDependencies": {
         "grunt-angular-templates": "^0.5.7",
@@ -57,33 +57,5 @@
     "bugs": {
         "url": "https://github.com/scatcher/angular-point-attachments/issues"
     },
-    "homepage": "https://github.com/scatcher/angular-point-attachments",
-    "jshintConfig": {
-        "node": true,
-        "browser": true,
-        "esnext": true,
-        "bitwise": true,
-        "camelcase": true,
-        "curly": true,
-        "eqeqeq": true,
-        "immed": true,
-        "indent": 4,
-        "latedef": true,
-        "newcap": true,
-        "noarg": true,
-        "quotmark": "single",
-        "regexp": true,
-        "undef": true,
-        "unused": true,
-        "strict": true,
-        "trailing": true,
-        "smarttabs": true,
-        "globals": {
-            "angular": false,
-            "_": false,
-            "moment": false,
-            "$": false,
-            "jQuery": false
-        }
-    }
+    "homepage": "https://github.com/scatcher/angular-point-attachments"
 }
