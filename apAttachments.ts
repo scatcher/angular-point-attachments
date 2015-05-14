@@ -18,7 +18,7 @@ module ap.attachments {
             if (!$scope.listItem || !$scope.listItem.id) {
                 return;
             }
-
+            vm.listItem = $scope.listItem;
             vm.listItem.attachments = vm.listItem.attachments || [];
         }
 
@@ -79,7 +79,7 @@ module ap.attachments {
 
             /** Ensure file name contains no illegal characters */
             if (file && this.validateFileName(file.name)) {
-                this.getFileBuffer(file).then(function (buffer) {
+                this.getFileBuffer(file).then( (buffer) => {
                     var binary = "";
                     var bytes = new Uint8Array(buffer);
                     var i = bytes.byteLength;
@@ -99,7 +99,7 @@ module ap.attachments {
                         this.uploading = false;
                         toastr.success('File successfully uploaded');
                         this.syncronizeRemoteChanges();
-                    }, function (err) {
+                    }, (err) => {
                         this.uploading = false;
                         toastr.error('There was a problem completing the upload.');
                     });
@@ -187,7 +187,7 @@ module ap.attachments {
                                     <input type="file" id="ap-file" name="file" class="form-control">
                                     <span class="input-group-btn">
                                         <button class="btn btn-primary" type="button"
-                                                ng-click="uploadAttachment()">Add</button>
+                                                ng-click="vm.uploadAttachment()">Add</button>
                                     </span>
                                 </div>
                                 <p class="help-block">Select the files you want to upload and then click the Add button.</p>
@@ -197,16 +197,16 @@ module ap.attachments {
                             </div>
 
                             <!---==============LIST OF ATTACHMENTS=============-->
-                            <div ng-if="listItem.attachments.length > 0">
+                            <div ng-if="vm.listItem.attachments.length > 0">
                                 <hr class="hr-sm">
                                 <h4>
                                     <small>Attachments</small>
                                 </h4>
 
                                 <ul class="list-unstyled">
-                                    <li ng-repeat="attachment in listItem.attachments">
-                                        <a href="{{ attachment }}" target="_blank">{{ fileName(attachment) }}</a>
-                                        <button type="button" class="btn btn-link" ng-click="deleteAttachment(attachment)"
+                                    <li ng-repeat="attachment in vm.listItem.attachments">
+                                        <a href="{{ attachment }}" target="_blank">{{ vm.fileName(attachment) }}</a>
+                                        <button type="button" class="btn btn-link" ng-click="vm.deleteAttachment(attachment)"
                                                 title="Delete this attachment">
                                             <i class="fa fa-times red"></i>
                                         </button>

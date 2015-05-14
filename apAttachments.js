@@ -13,6 +13,7 @@ var ap;
                 if (!$scope.listItem || !$scope.listItem.id) {
                     return;
                 }
+                vm.listItem = $scope.listItem;
                 vm.listItem.attachments = vm.listItem.attachments || [];
             }
             APAttachmentsController.prototype.deleteAttachment = function (attachment) {
@@ -60,22 +61,22 @@ var ap;
                 });
             };
             APAttachmentsController.prototype.uploadAttachment = function () {
+                var _this = this;
                 var file = document.getElementById('ap-file').files[0];
                 /** Ensure file name contains no illegal characters */
                 if (file && this.validateFileName(file.name)) {
                     this.getFileBuffer(file).then(function (buffer) {
-                        var _this = this;
                         var binary = "";
                         var bytes = new Uint8Array(buffer);
                         var i = bytes.byteLength;
                         while (i--) {
                             binary = String.fromCharCode(bytes[i]) + binary;
                         }
-                        this.uploading = true;
+                        _this.uploading = true;
                         apDataService.serviceWrapper({
                             operation: 'AddAttachment',
-                            listName: this.listItem.getModel().list.getListId(),
-                            listItemID: this.listItem.id,
+                            listName: _this.listItem.getModel().list.getListId(),
+                            listItemID: _this.listItem.id,
                             fileName: file.name,
                             attachment: btoa(binary)
                         }).then(function () {
@@ -83,7 +84,7 @@ var ap;
                             toastr.success('File successfully uploaded');
                             _this.syncronizeRemoteChanges();
                         }, function (err) {
-                            this.uploading = false;
+                            _this.uploading = false;
                             toastr.error('There was a problem completing the upload.');
                         });
                     });
@@ -139,7 +140,7 @@ var ap;
                 },
                 controller: APAttachmentsController,
                 controllerAs: 'vm',
-                template: "\n                <div>\n                    <style type=\"text/css\">\n                        .ap-attachments-container {\n                            min-height: 200px;\n                        }\n\n                        .ap-attachments-container .ap-add-attachments {\n                            height: 110px;\n                        }\n\n                        .ap-attachments-container .ap-add-attachments iframe {\n                            height: 95px;\n                        }\n                    </style>\n\n\n                    <div class=\"ap-attachments-container\">\n                            <div ng-if=\"!vm.uploading\">\n                                <div class=\"input-group\">\n                                    <input type=\"file\" id=\"ap-file\" name=\"file\" class=\"form-control\">\n                                    <span class=\"input-group-btn\">\n                                        <button class=\"btn btn-primary\" type=\"button\"\n                                                ng-click=\"uploadAttachment()\">Add</button>\n                                    </span>\n                                </div>\n                                <p class=\"help-block\">Select the files you want to upload and then click the Add button.</p>\n                            </div>\n                            <div ng-show=\"vm.uploading\" class=\"alert alert-info txt-align-center\">\n                                <i class=\"fa fa-spinner fa-spin\"></i> processing request...\n                            </div>\n\n                            <!---==============LIST OF ATTACHMENTS=============-->\n                            <div ng-if=\"listItem.attachments.length > 0\">\n                                <hr class=\"hr-sm\">\n                                <h4>\n                                    <small>Attachments</small>\n                                </h4>\n\n                                <ul class=\"list-unstyled\">\n                                    <li ng-repeat=\"attachment in listItem.attachments\">\n                                        <a href=\"{{ attachment }}\" target=\"_blank\">{{ fileName(attachment) }}</a>\n                                        <button type=\"button\" class=\"btn btn-link\" ng-click=\"deleteAttachment(attachment)\"\n                                                title=\"Delete this attachment\">\n                                            <i class=\"fa fa-times red\"></i>\n                                        </button>\n                                    </li>\n                                </ul>\n\n                            </div>\n\n\n                        </fieldset>\n\n                    </div>\n                </div>"
+                template: "\n                <div>\n                    <style type=\"text/css\">\n                        .ap-attachments-container {\n                            min-height: 200px;\n                        }\n\n                        .ap-attachments-container .ap-add-attachments {\n                            height: 110px;\n                        }\n\n                        .ap-attachments-container .ap-add-attachments iframe {\n                            height: 95px;\n                        }\n                    </style>\n\n\n                    <div class=\"ap-attachments-container\">\n                            <div ng-if=\"!vm.uploading\">\n                                <div class=\"input-group\">\n                                    <input type=\"file\" id=\"ap-file\" name=\"file\" class=\"form-control\">\n                                    <span class=\"input-group-btn\">\n                                        <button class=\"btn btn-primary\" type=\"button\"\n                                                ng-click=\"vm.uploadAttachment()\">Add</button>\n                                    </span>\n                                </div>\n                                <p class=\"help-block\">Select the files you want to upload and then click the Add button.</p>\n                            </div>\n                            <div ng-show=\"vm.uploading\" class=\"alert alert-info txt-align-center\">\n                                <i class=\"fa fa-spinner fa-spin\"></i> processing request...\n                            </div>\n\n                            <!---==============LIST OF ATTACHMENTS=============-->\n                            <div ng-if=\"vm.listItem.attachments.length > 0\">\n                                <hr class=\"hr-sm\">\n                                <h4>\n                                    <small>Attachments</small>\n                                </h4>\n\n                                <ul class=\"list-unstyled\">\n                                    <li ng-repeat=\"attachment in vm.listItem.attachments\">\n                                        <a href=\"{{ attachment }}\" target=\"_blank\">{{ vm.fileName(attachment) }}</a>\n                                        <button type=\"button\" class=\"btn btn-link\" ng-click=\"vm.deleteAttachment(attachment)\"\n                                                title=\"Delete this attachment\">\n                                            <i class=\"fa fa-times red\"></i>\n                                        </button>\n                                    </li>\n                                </ul>\n\n                            </div>\n\n\n                        </fieldset>\n\n                    </div>\n                </div>"
             };
         }
         attachments.APAttachments = APAttachments;
