@@ -1,6 +1,7 @@
 node_modules/
-demo/bower_components/
+bower_components/
 *.log
 .idea
 .tmp
-.grunt
+.DS_Store
+.settings

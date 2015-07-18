@@ -1,3 +1,4 @@
+/// <reference path="../typings/tsd.d.ts" />
 var ap;
 (function (ap) {
     var attachments;
@@ -54,7 +55,8 @@ var ap;
             APAttachmentsController.prototype.syncronizeRemoteChanges = function () {
                 var _this = this;
                 var model = this.listItem.getModel();
-                model.getListItemById(this.listItem.id).then(function (updatedItem) {
+                model.getListItemById(this.listItem.id)
+                    .then(function (updatedItem) {
                     if (_this.listItem.attachments !== updatedItem.attachments) {
                         _this.listItem.attachments = updatedItem.attachments;
                     }
@@ -125,25 +127,23 @@ var ap;
             };
             return APAttachmentsController;
         })();
-        function APAttachments($injector) {
+        function APAttachmentsDirective($injector) {
             $q = $injector.get('$q');
             $sce = $injector.get('$sce');
             $timeout = $injector.get('$timeout');
             apDataService = $injector.get('apDataService');
             toastr = $injector.get('toastr');
             return {
-                //replace: true,
-                //templateUrl: 'src/ap_attachments_tmpl.html',
                 scope: {
                     listItem: "=",
                     changeEvent: '=' //Optional - called after an attachment is deleted
                 },
                 controller: APAttachmentsController,
                 controllerAs: 'vm',
-                template: "\n                <div>\n                    <style type=\"text/css\">\n                        .ap-attachments-container {\n                            min-height: 200px;\n                        }\n\n                        .ap-attachments-container .ap-add-attachments {\n                            height: 110px;\n                        }\n\n                        .ap-attachments-container .ap-add-attachments iframe {\n                            height: 95px;\n                        }\n                    </style>\n\n\n                    <div class=\"ap-attachments-container\">\n                            <div ng-if=\"!vm.uploading\">\n                                <div class=\"input-group\">\n                                    <input type=\"file\" id=\"ap-file\" name=\"file\" class=\"form-control\">\n                                    <span class=\"input-group-btn\">\n                                        <button class=\"btn btn-primary\" type=\"button\"\n                                                ng-click=\"vm.uploadAttachment()\">Add</button>\n                                    </span>\n                                </div>\n                                <p class=\"help-block\">Select the files you want to upload and then click the Add button.</p>\n                            </div>\n                            <div ng-show=\"vm.uploading\" class=\"alert alert-info txt-align-center\">\n                                <i class=\"fa fa-spinner fa-spin\"></i> processing request...\n                            </div>\n\n                            <!---==============LIST OF ATTACHMENTS=============-->\n                            <div ng-if=\"vm.listItem.attachments.length > 0\">\n                                <hr class=\"hr-sm\">\n                                <h4>\n                                    <small>Attachments</small>\n                                </h4>\n\n                                <ul class=\"list-unstyled\">\n                                    <li ng-repeat=\"attachment in vm.listItem.attachments\">\n                                        <a href=\"{{ attachment }}\" target=\"_blank\">{{ vm.fileName(attachment) }}</a>\n                                        <button type=\"button\" class=\"btn btn-link\" ng-click=\"vm.deleteAttachment(attachment)\"\n                                                title=\"Delete this attachment\">\n                                            <i class=\"fa fa-times red\"></i>\n                                        </button>\n                                    </li>\n                                </ul>\n\n                            </div>\n\n\n                        </fieldset>\n\n                    </div>\n                </div>"
+                templateUrl: 'src/apAttachments.html'
             };
         }
-        attachments.APAttachments = APAttachments;
+        attachments.APAttachmentsDirective = APAttachmentsDirective;
         /**
          * @ngdoc directive
          * @name angularPoint.directive:apAttachments
@@ -167,7 +167,10 @@ var ap;
          *      data-change-event="fetchAttachments"></span>
          * </pre>
          */
-        angular.module('angularPoint').directive('apAttachments', APAttachments);
+        angular.module('angularPoint')
+            .directive('apAttachments', APAttachmentsDirective);
     })(attachments = ap.attachments || (ap.attachments = {}));
 })(ap || (ap = {}));
-//# sourceMappingURL=apAttachments.js.map
+
+//# sourceMappingURL=angular-point-attachments.js.map
+angular.module("angularPoint").run(["$templateCache", function($templateCache) {$templateCache.put("apAttachments.html","<div>\n	<style type=\"text/css\">\n		.ap-attachments-container {\n            min-height: 200px;\n        }\n\n        .ap-attachments-container .ap-add-attachments {\n            height: 110px;\n        }\n\n        .ap-attachments-container .ap-add-attachments iframe {\n            height: 95px;\n        }\n	</style>\n	<div class=\"ap-attachments-container\">\n		<div ng-if=\"!vm.uploading\">\n			<div class=\"input-group\">\n				<input type=\"file\" id=\"ap-file\" name=\"file\" class=\"form-control\">\n				<span class=\"input-group-btn\">\n					<button class=\"btn btn-primary\" type=\"button\" ng-click=\"vm.uploadAttachment()\">Add</button>\n				</span>\n			</div>\n			<p class=\"help-block\">Select the files you want to upload and then click the Add button.</p>\n		</div>\n		<div ng-show=\"vm.uploading\" class=\"alert alert-info txt-align-center\">\n			<i class=\"fa fa-spinner fa-spin\"></i>processing request...</div>\n			\n		<!---==============LIST OF ATTACHMENTS=============-->\n		<div ng-if=\"vm.listItem.attachments.length > 0\">\n			<hr class=\"hr-sm\">\n			<h4>\n				<small>Attachments</small>\n			</h4>\n			<ul class=\"list-unstyled\">\n				<li ng-repeat=\"attachment in vm.listItem.attachments\">\n					<a href=\"{{ attachment }}\" target=\"_blank\">{{ vm.fileName(attachment) }}</a>\n					<button type=\"button\" class=\"btn btn-link\" ng-click=\"vm.deleteAttachment(attachment)\" title=\"Delete this attachment\">\n						<i class=\"fa fa-times red\"></i>\n					</button>\n				</li>\n			</ul>\n		</div>\n		</fieldset>\n	</div>\n</div>");}]);

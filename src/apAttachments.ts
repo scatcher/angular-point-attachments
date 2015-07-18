@@ -1,17 +1,22 @@
+/// <reference path="../typings/tsd.d.ts" />
 module ap.attachments {
     'use strict';
 
     var $sce, $q, $timeout, apDataService, toastr;
 
+    interface IListItemWithAttachments extends ap.ListItem<any>{
+        attachments: string[];
+    }
+
     interface IControllerScope {
         changeEvent?();
-        listItem: ap.IListItem;
+        listItem: IListItemWithAttachments;
     }
 
     class APAttachmentsController {
-        listItem;
+        listItem: IListItemWithAttachments;
         uploading = false;
-        constructor(private $scope:IControllerScope) {
+        constructor(private $scope: IControllerScope) {
             var vm = this;
 
             /** Can't manipulate attachments for listItems that haven't been saved to the server */
@@ -46,11 +51,11 @@ module ap.attachments {
 
             var reader = new FileReader();
 
-            reader.onload = function (e) {
+            reader.onload = function(e) {
                 deferred.resolve(e.target.result);
             };
 
-            reader.onerror = function (e) {
+            reader.onerror = function(e) {
                 deferred.reject(e.target.error);
             };
 
@@ -79,7 +84,7 @@ module ap.attachments {
 
             /** Ensure file name contains no illegal characters */
             if (file && this.validateFileName(file.name)) {
-                this.getFileBuffer(file).then( (buffer) => {
+                this.getFileBuffer(file).then((buffer) => {
                     var binary = "";
                     var bytes = new Uint8Array(buffer);
                     var i = bytes.byteLength;
@@ -95,7 +100,7 @@ module ap.attachments {
                         listItemID: this.listItem.id,
                         fileName: file.name,
                         attachment: btoa(binary)
-                    }).then( () => {
+                    }).then(() => {
                         this.uploading = false;
                         toastr.success('File successfully uploaded');
                         this.syncronizeRemoteChanges();
@@ -116,7 +121,7 @@ module ap.attachments {
             var isValid = true;
             var userMessage = '';
             var illegalCharacters = ['~', '#', '%', '&', '*', '{', '}', '\\', '/', ':', '<', '>', '?', '|', '"', '..'];
-            _.each(illegalCharacters, function (illegalCharacter) {
+            _.each(illegalCharacters, function(illegalCharacter) {
                 if (fileName.indexOf(illegalCharacter) > -1) {
                     userMessage = 'The "' + illegalCharacter + '" character isn\'t allowed to be used in a file name.';
                     /** Break loop early */
@@ -148,7 +153,7 @@ module ap.attachments {
 
     }
 
-    export function APAttachments($injector) {
+    export function APAttachmentsDirective($injector) {
         $q = $injector.get('$q');
         $sce = $injector.get('$sce');
         $timeout = $injector.get('$timeout');
@@ -156,70 +161,13 @@ module ap.attachments {
         toastr = $injector.get('toastr');
 
         return {
-            //replace: true,
-            //templateUrl: 'src/ap_attachments_tmpl.html',
             scope: {
                 listItem: "=",      //List item the attachments belong to
                 changeEvent: '='    //Optional - called after an attachment is deleted
             },
             controller: APAttachmentsController,
             controllerAs: 'vm',
-            template: `
-                <div>
-                    <style type="text/css">
-                        .ap-attachments-container {
-                            min-height: 200px;
-                        }
-
-                        .ap-attachments-container .ap-add-attachments {
-                            height: 110px;
-                        }
-
-                        .ap-attachments-container .ap-add-attachments iframe {
-                            height: 95px;
-                        }
-                    </style>
-
-
-                    <div class="ap-attachments-container">
-                            <div ng-if="!vm.uploading">
-                                <div class="input-group">
-                                    <input type="file" id="ap-file" name="file" class="form-control">
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button"
-                                                ng-click="vm.uploadAttachment()">Add</button>
-                                    </span>
-                                </div>
-                                <p class="help-block">Select the files you want to upload and then click the Add button.</p>
-                            </div>
-                            <div ng-show="vm.uploading" class="alert alert-info txt-align-center">
-                                <i class="fa fa-spinner fa-spin"></i> processing request...
-                            </div>
-
-                            <!---==============LIST OF ATTACHMENTS=============-->
-                            <div ng-if="vm.listItem.attachments.length > 0">
-                                <hr class="hr-sm">
-                                <h4>
-                                    <small>Attachments</small>
-                                </h4>
-
-                                <ul class="list-unstyled">
-                                    <li ng-repeat="attachment in vm.listItem.attachments">
-                                        <a href="{{ attachment }}" target="_blank">{{ vm.fileName(attachment) }}</a>
-                                        <button type="button" class="btn btn-link" ng-click="vm.deleteAttachment(attachment)"
-                                                title="Delete this attachment">
-                                            <i class="fa fa-times red"></i>
-                                        </button>
-                                    </li>
-                                </ul>
-
-                            </div>
-
-
-                        </fieldset>
-
-                    </div>
-                </div>`
+            templateUrl: 'src/apAttachments.html'
         }
     }
 
@@ -247,6 +195,6 @@ module ap.attachments {
      * </pre>
      */
     angular.module('angularPoint')
-        .directive('apAttachments', APAttachments);
+        .directive('apAttachments', APAttachmentsDirective);
 
 }
