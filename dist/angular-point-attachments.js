@@ -140,7 +140,7 @@ var ap;
                 },
                 controller: APAttachmentsController,
                 controllerAs: 'vm',
-                templateUrl: 'src/apAttachments.html'
+                templateUrl: 'apAttachments.html'
             };
         }
         attachments.APAttachmentsDirective = APAttachmentsDirective;

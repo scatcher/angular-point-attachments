@@ -167,7 +167,7 @@ module ap.attachments {
             },
             controller: APAttachmentsController,
             controllerAs: 'vm',
-            templateUrl: 'src/apAttachments.html'
+            templateUrl: 'apAttachments.html'
         }
     }
 
