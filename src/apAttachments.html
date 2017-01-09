@@ -13,33 +13,32 @@
         }
 	</style>
 	<div class="ap-attachments-container">
-		<div ng-if="!vm.uploading">
+		<div ng-if="!$ctrl.uploading">
 			<div class="input-group">
 				<input type="file" id="ap-file" name="file" class="form-control">
 				<span class="input-group-btn">
-					<button class="btn btn-primary" type="button" ng-click="vm.uploadAttachment()">Add</button>
+					<button class="btn btn-primary" type="button" ng-click="$ctrl.uploadAttachment()">Add</button>
 				</span>
 			</div>
 			<p class="help-block">Select the files you want to upload and then click the Add button.</p>
 		</div>
-		<div ng-show="vm.uploading" class="alert alert-info txt-align-center">
+		<div ng-show="$ctrl.uploading" class="alert alert-info txt-align-center">
 			<i class="fa fa-spinner fa-spin"></i>processing request...</div>
 			
 		<!---==============LIST OF ATTACHMENTS=============-->
-		<div ng-if="vm.listItem.attachments.length > 0">
+		<div ng-if="$ctrl.listItem.attachments.length > 0">
 			<hr class="hr-sm">
 			<h4>
 				<small>Attachments</small>
 			</h4>
 			<ul class="list-unstyled">
-				<li ng-repeat="attachment in vm.listItem.attachments">
-					<a href="{{ attachment }}" target="_blank">{{ vm.fileName(attachment) }}</a>
-					<button type="button" class="btn btn-link" ng-click="vm.deleteAttachment(attachment)" title="Delete this attachment">
+				<li ng-repeat="attachment in $ctrl.listItem.attachments">
+					<a href="{{ attachment }}" target="_blank">{{ $ctrl.fileName(attachment) }}</a>
+					<button type="button" class="btn btn-link" ng-click="$ctrl.deleteAttachment(attachment)" title="Delete this attachment">
 						<i class="fa fa-times red"></i>
 					</button>
 				</li>
 			</ul>
 		</div>
-		</fieldset>
 	</div>
 </div>
