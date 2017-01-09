@@ -5,18 +5,23 @@ import * as _ from 'lodash';
 
 // var $sce, $q, $timeout, apDataService;
 
-interface IListItemWithAttachments extends ListItem<any> {
-    attachments: string[];
-}
+// interface IListItemWithAttachments extends ListItem<any> {
+//     ...ListItem,
+//     attachments: string[];
+// }
+//
+// type IListItemWithAttachments extends ListItem {
+//
+// }
 
 interface IControllerScope {
     changeEvent?();
-    listItem: IListItemWithAttachments;
+    listItem: ListItem;
 }
 
 class APAttachmentsController {
     static $inject = ['$scope', '$sce', '$q', '$timeout', 'apDataService'];
-    listItem: IListItemWithAttachments;
+    listItem: ListItem;
     uploading = false;
 
     constructor(private $scope: IControllerScope, private $sce, private $q, private $timeout, private apDataService) {}

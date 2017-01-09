@@ -39,7 +39,13 @@ module.exports = {
             test: /\.ts$/,
             loader: 'awesome-typescript-loader?declaration=false',
             exclude: [/\.e2e\.ts$/]
-        }]
+        },
+        {
+            test: /\.html$/,
+            exclude: [root('src/index.html'), /node_modules/],
+            loader: 'raw-loader'
+        },
+        ]
     },
 
     plugins: [
