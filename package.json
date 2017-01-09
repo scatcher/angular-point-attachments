@@ -1,6 +1,6 @@
 {
   "name": "angular-point-attachments",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "Simple attachments directive for angular-point.",
   "main": "dist/angular-point-attachments.js",
   "scripts": {
