@@ -1,27 +1,17 @@
 import {ListItem} from 'angular-point';
-// import {ListItem} from '../angular-point/factories/apListItemFactory';
 import * as toastr from 'toastr';
 import * as _ from 'lodash';
 
-// var $sce, $q, $timeout, apDataService;
 
-// interface IListItemWithAttachments extends ListItem<any> {
-//     ...ListItem,
-//     attachments: string[];
-// }
-//
-// type IListItemWithAttachments extends ListItem {
-//
-// }
 
-interface IControllerScope {
+export interface IControllerScope {
+    listItem: ListItem<any>;
     changeEvent?();
-    listItem: ListItem;
 }
 
-class APAttachmentsController {
+export class APAttachmentsController {
     static $inject = ['$scope', '$sce', '$q', '$timeout', 'apDataService'];
-    listItem: ListItem;
+    listItem: ListItem<any>;
     uploading = false;
 
     constructor(private $scope: IControllerScope, private $sce, private $q, private $timeout, private apDataService) {}
