@@ -2,8 +2,6 @@ import {ListItem} from 'angular-point';
 import * as toastr from 'toastr';
 import * as _ from 'lodash';
 
-
-
 export interface IControllerScope {
     listItem: ListItem<any>;
     changeEvent?();

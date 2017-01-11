@@ -1,6 +1,6 @@
 {
   "name": "angular-point-attachments",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Simple attachments directive for angular-point.",
   "scripts": {
     "build": "webpack"

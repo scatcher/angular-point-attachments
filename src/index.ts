@@ -1,4 +1,4 @@
-import { IListFieldMapping, AngularPointModule } from 'angular-point';
+import { AngularPointModule } from 'angular-point';
 import {APAttachmentsComponent} from './apAttachments';
 
 AngularPointModule
