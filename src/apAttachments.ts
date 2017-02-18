@@ -8,21 +8,19 @@ export interface IControllerScope {
 }
 
 export class APAttachmentsController {
-    static $inject = ['$scope', '$sce', '$q', '$timeout', 'apDataService'];
+    static $inject = ['$q', 'apDataService'];
+    changeEvent: Function;
     listItem: ListItem<any>;
     uploading = false;
 
-    constructor(private $scope: IControllerScope, private $sce, private $q, private $timeout, private apDataService) {}
+    constructor(private $q, private apDataService) {}
 
     $onInit() {
-        const $ctrl = this;
-
         /** Can't manipulate attachments for listItems that haven't been saved to the server */
-        if (!this.$scope.listItem || !this.$scope.listItem.id) {
+        if (!this.listItem || !this.listItem.id) {
             return;
         }
-        $ctrl.listItem = this.$scope.listItem;
-        $ctrl.listItem.attachments = $ctrl.listItem.attachments || [];
+        this.listItem.attachments = this.listItem.attachments || [];
     }
 
     deleteAttachment(attachment) {
@@ -32,8 +30,8 @@ export class APAttachmentsController {
             this.listItem.deleteAttachment(attachment).then(() => {
                 this.syncronizeRemoteChanges();
                 toastr.success('Attachment successfully deleted');
-                if (_.isFunction(this.$scope.changeEvent)) {
-                    this.$scope.changeEvent();
+                if (_.isFunction(this.changeEvent)) {
+                    this.changeEvent();
                 }
             });
         }
