@@ -7,7 +7,7 @@
   },
   "peerDependencies": {
     "angular": "^1.6.0",
-    "angular-point": "^6.0.0",
+    "angular-point": "^5.0.0",
     "lodash": "^4.17.4",
     "toastr": "^2.1.2"
   },
