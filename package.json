@@ -1,13 +1,13 @@
 {
   "name": "angular-point-attachments",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "Simple attachments directive for angular-point.",
   "scripts": {
     "build": "webpack"
   },
-  "dependencies": {
-    "angular": "~1.6.1",
-    "angular-point": "^5.0.0",
+  "peerDependencies": {
+    "angular": "^1.6.0",
+    "angular-point": "^6.0.0",
     "lodash": "^4.17.4",
     "toastr": "^2.1.2"
   },
