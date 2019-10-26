@@ -1,3 +1,4 @@
+import { IQService, IScope } from 'angular';
 import { ListItem } from 'angular-point';
 import * as _ from 'lodash';
 import * as toastr from 'toastr';
@@ -8,12 +9,13 @@ export interface IControllerScope {
 }
 
 export class APAttachmentsController {
-  static $inject = [];
+  static $inject = ['$scope', '$q', 'Upload'];
   changeEvent: Function;
   listItem: ListItem<any>;
   uploading = false;
+  files: File[] = [];
 
-  constructor() {}
+  constructor(private $scope: IScope, private $q: IQService, private Upload) {}
 
   $onInit() {
     /** Can't manipulate attachments for listItems that haven't been saved to the server */
@@ -42,6 +44,17 @@ export class APAttachmentsController {
     return attachment.substr(index);
   }
 
+  isImage(attachment) {
+    let isImage = false;
+    const fileTypes = ['png', 'gif', 'jpg', 'jpeg'];
+    fileTypes.forEach(type => {
+      if (attachment.toLowerCase().indexOf(`.${type}`) > -1) {
+        isImage = true;
+      }
+    });
+    return isImage;
+  }
+
   /**
    *  Events don't automatically sync with the cache so we need to get
    *  the updated list item which will extend the changes to our local referenced list
@@ -56,26 +69,46 @@ export class APAttachmentsController {
     });
   }
 
-  uploadAttachment() {
-    const el = document.getElementById('ap-file') as HTMLInputElement;
-    const file = el.files[0];
+  upload(files: File[]) {
+    if (files && files.length > 0) {
+      const promises = [];
+      this.uploading = true;
+      files
+        .map(file => {
+          if (file.name.indexOf('image.') > -1) {
+            // Image pasted from clipboard so make it unique
+            const uniqueName = file.name.replace(
+              'image',
+              `image-${new Date()
+                .toJSON()
+                // Remove illegal characters
+                .replace(/:/gi, '-')
+                .replace('.', '-')}`,
+            );
+            return new File([file], uniqueName);
+          } else {
+            return file;
+          }
+        })
+        .forEach(file => promises.push(this.listItem.addAttachment(file)));
 
-    this.uploading = true;
-    this.listItem.addAttachment(file).then(
-      () => {
-        this.uploading = false;
-        toastr.success('File successfully uploaded');
-        this.synchronizeRemoteChanges();
-      },
-      err => {
-        this.uploading = false;
-        if (_.isString(err)) {
-          toastr.error(err);
-        } else {
-          toastr.error('There was a problem completing the upload.');
-        }
-      },
-    );
+      this.$q.all(promises).then(
+        () => {
+          this.uploading = false;
+          this.files = [];
+          toastr.success('File successfully uploaded');
+          this.synchronizeRemoteChanges();
+        },
+        err => {
+          this.uploading = false;
+          if (_.isString(err)) {
+            toastr.error(err);
+          } else {
+            toastr.error('There was a problem completing the upload.');
+          }
+        },
+      );
+    }
   }
 }
 

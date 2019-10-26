@@ -1,6 +1,6 @@
 {
   "name": "angular-point-attachments",
-  "version": "6.0.1",
+  "version": "7.0.0",
   "description": "Simple attachments directive for angular-point.",
   "scripts": {
     "build": "webpack"
@@ -9,6 +9,7 @@
     "angular": "^1.6.0",
     "angular-point": "^6.4.0",
     "lodash": "^4.17.4",
+    "ng-file-upload": "^12.2.13",
     "toastr": "^2.1.2"
   },
   "devDependencies": {

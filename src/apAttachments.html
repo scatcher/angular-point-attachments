@@ -1,37 +1,62 @@
 <div>
-	<style type="text/css">
-		.ap-attachments-container {
-			min-height: 200px;
-			height: 110px;
-		}
-	</style>
-	<div class="ap-attachments-container">
-		<div ng-if="!$ctrl.uploading">
-			<div class="input-group">
-				<input type="file" id="ap-file" name="file" class="form-control">
-				<span class="input-group-btn">
-					<button class="btn btn-primary" type="button" ng-click="$ctrl.uploadAttachment()">Add</button>
-				</span>
-			</div>
-			<p class="help-block">Select the files you want to upload and then click the Add button.</p>
-		</div>
-		<div ng-show="$ctrl.uploading" class="alert alert-info txt-align-center">
-			<i class="fa fa-spinner fa-spin"></i>processing request...</div>
+  <style type="text/css">
+      .ap-drop-box {
+          background: #f8f8f8;
+          border: 5px dashed #ddd;
+          width: 100%;
+          height: 80px;
+          text-align: center;
+          padding-top: 25px;
+      }
+      .ap-dragover {
+          border: 5px dashed blue;
+      }
+      .ap-attachments-container {
+          min-height: 200px;
+      }
+  </style>
+  <div class="ap-attachments-container">
+      <div ng-if="!$ctrl.uploading">
+          <div
+              ngf-drop
+              ng-model="$ctrl.files"
+              class="ap-drop-box"
+              ngf-drag-over-class="'ap-dragover'"
+              ngf-multiple="true"
+              ngf-allow-dir="false"
+              ngf-change="$ctrl.upload($files)"
+          >
+              Drop files here or
+              <a ngf-select ngf-change="$ctrl.upload($files)" class="pointer"><i class="fa fa-upload"></i> click</a>
+              to upload. You can also paste (Ctrl + v) a screenshot if you click in here first.
+          </div>
+          <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
+      </div>
+      <div ng-show="$ctrl.uploading" class="alert alert-info txt-align-center">
+          <i class="fa fa-spinner fa-spin"></i>processing request...
+      </div>
 
-		<!---==============LIST OF ATTACHMENTS=============-->
-		<div ng-if="$ctrl.listItem.attachments.length > 0">
-			<hr class="hr-sm">
-			<h4>
-				<small>Attachments</small>
-			</h4>
-			<ul class="list-unstyled">
-				<li ng-repeat="attachment in $ctrl.listItem.attachments">
-					<a href="{{ attachment }}" target="_blank">{{ $ctrl.fileName(attachment) }}</a>
-					<button type="button" class="btn btn-link" ng-click="$ctrl.deleteAttachment(attachment)" title="Delete this attachment">
-						<i class="fa fa-times red"></i>
-					</button>
-				</li>
-			</ul>
-		</div>
-	</div>
+      <!---==============LIST OF ATTACHMENTS=============-->
+      <div ng-if="$ctrl.listItem.attachments.length > 0">
+          <hr class="hr-sm" />
+          <ul class="list-unstyled">
+              <li ng-repeat="attachment in $ctrl.listItem.attachments">
+                  <a href="{{ attachment }}" target="_blank">{{ $ctrl.fileName(attachment) }} </a>
+                  <button
+                      type="button"
+                      class="btn btn-link"
+                      ng-click="$ctrl.deleteAttachment(attachment)"
+                      title="Delete this attachment"
+                  >
+                      <i class="fa fa-trash"></i>
+                  </button>
+                  <div ng-if="$ctrl.isImage(attachment)">
+                      <a href="{{ attachment }}" target="_blank">
+                          <image ng-src="{{ attachment }}"></image>
+                      </a>
+                  </div>
+              </li>
+          </ul>
+      </div>
+  </div>
 </div>

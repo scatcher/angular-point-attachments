@@ -1,5 +1,5 @@
 import { AngularPointModule } from 'angular-point';
-import {APAttachmentsComponent} from './apAttachments';
+import 'ng-file-upload';
+import { APAttachmentsComponent } from './apAttachments';
 
-AngularPointModule
-    .component('apAttachments', APAttachmentsComponent);
+AngularPointModule.component('apAttachments', APAttachmentsComponent);
